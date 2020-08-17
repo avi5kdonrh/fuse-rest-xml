@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+       http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://camel.apache.org/schema/spring       http://camel.apache.org/schema/spring/camel-spring.xsd">
+
+    <camelContext xmlns="http://camel.apache.org/schema/spring">
+
+        <restConfiguration component="servlet" contextPath="/camel-rest-3scale" apiContextPath="/api-doc"
+                           apiContextRouteId="doc-api" enableCORS="true" scheme="http">
+            <apiProperty key="api.title" value="User Service"/>
+            <apiProperty key="api.version" value="1.0"/>
+            <apiProperty key="api.specification.contentType.json" value="application/vnd.oai.openapi+json;version=2.0"/>
+            <apiProperty key="api.specification.contentType.yaml" value="application/vnd.oai.openapi;version=2.0"/>
+            <apiProperty key="cors" value="true"/>
+        </restConfiguration>
+        <!-- Override the default Camel Swagger doc with custom OpenAPI doc -->
+        <!--
+        <rest path="/" enableCORS="true">
+            <get id="openapi.json" produces="application/json" uri="openapi.json">
+                <description>Gets the openapi document for this service</description>
+                <route>
+                    <setHeader headerName="Exchange.CONTENT_TYPE">
+                        <constant>application/vnd.oai.openapi+json</constant>
+                    </setHeader>
+                    <setBody>
+                        <simple>resource:classpath:openapi.json</simple>
+                    </setBody>
+                </route>
+            </get>
+        </rest>
+        -->
+
+        <!-- User service -->
+        <rest path="/users" bindingMode="json" enableCORS="true">
+            <description>Users Service</description>
+            <post id="greet" consumes="application/json" produces="application/text" uri="greet" type="org.example.User" outType="java.lang.String">
+                <description>Greet this Service with User credentials</description>
+                <responseMessage message="User added" code="200"/>
+                <to uri="bean:userService?method=greetUser"/>
+            </post>
+            <get id="list" produces="application/json" uri="list" outType="org.example.User[]">
+                <description>List users that used this service</description>
+                <responseMessage message="All users successfully returned" code="200"/>
+                <to uri="bean:userService?method=findUsers"/>
+            </get>
+        </rest>
+
+    </camelContext>
+
+</beans>
